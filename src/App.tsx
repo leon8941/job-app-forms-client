@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import _ from 'lodash';
 
 import './App.css';
+import { FileUploader } from "react-drag-drop-files";
 import { fetchJobs, fetchLocations, fetchHeardFroms, submitJobApplication } from './api/jobApplications';
 
 interface IJob {
@@ -48,6 +49,7 @@ function App() {
       prefferedLocation: '',
       heardFrom: '',
       noticePeriod: '',
+      file: null,
     },
     validationSchema: Yup.object({
       firstName: Yup.string()
@@ -71,6 +73,7 @@ function App() {
       prefferedLocation: Yup.number().required('Preferred Location is Required'),
       heardFrom: Yup.string().required('Heard from is Required'),
       noticePeriod: Yup.number().required('Notice Period is Required'),
+      file: Yup.string().required('Resume Required').nullable()
     }),
     onSubmit: async (values, actions) => {
       const response = await submitJobApplication(values)
@@ -89,6 +92,7 @@ function App() {
             prefferedLocation: '',
             heardFrom: '',
             noticePeriod: '',
+            file: null,
           }
         })
 
@@ -96,6 +100,14 @@ function App() {
       }
     }
   })
+
+  const {
+    setFieldValue,
+  } = formik;
+
+  const handleFileChange = (file: File) => {
+    setFieldValue('file', file);
+  };
   
   const basicModal = <>
     <div
@@ -427,17 +439,19 @@ function App() {
                           </svg>
                           <div className="flex text-sm text-gray-600">
                             <label
-                              htmlFor="file-upload"
+                              htmlFor="file"
                               className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                             >
-                              <span>Upload a file</span>
-                              <input id="file-upload" name="file-upload" type="file" className="sr-only" />
+                              <FileUploader handleChange={handleFileChange} name="file" types={["PDF"]} maxSize={10}/>
                             </label>
-                            <p className="pl-1">or drag and drop</p>
                           </div>
-                          <p className="text-xs text-gray-500">PDF up to 10MB</p>
                         </div>
                       </div>
+                      {
+                        <div className="mb-3 text-xs text-red-500">
+                          {formik.errors.file ? <div>{formik.errors.file}</div> : null}  
+                        </div>
+                      }
                     </div>
                   </div>
                   <div className="px-4 py-3 bg-gray-50 text-right sm:px-6">
