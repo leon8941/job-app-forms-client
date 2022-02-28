@@ -18,15 +18,37 @@ export const fetchHeardFroms = async () => {
   return response.json()
 }
 
-export const submitJobApplication = async (payload: unknown) => {
-  const response = await fetch(`${BACKEND_BASEURL}/submitJobApplication`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    mode: 'cors',
-    body: JSON.stringify(payload)
-  })
+export const submitJobApplication = async (payload: any) => {
+  const {
+    file,
+    ...data
+  } = payload
 
-  return response.status
+  const formData = new FormData();
+
+  formData.append("file", file);
+
+  try {
+    const fileResponse = await fetch(`${BACKEND_BASEURL}/resume`, {
+      method: 'POST',
+      body: formData,
+    })
+
+    if (fileResponse.status === 200) {
+      const response = await fetch(`${BACKEND_BASEURL}/submitJobApplication`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        mode: 'cors',
+        body: JSON.stringify(data)
+      })
+  
+      return response.status
+    } else {
+      return 'error'
+    }
+  } catch (error) {
+    return error
+  }
 }

@@ -17,6 +17,8 @@ function App() {
   const [locations, setLocations] = useState([])
   const [heardFroms, setHeardFroms] = useState([])
   const [showModal, setShowModal] = useState(false)
+  const [previewFile, setPreviewFile] = useState<string | null>(null)
+  const [previewFileName, setPreviewFileName] = useState<string | null>(null)
 
   useEffect(() => {
     fetchJobs().then(response => {
@@ -76,7 +78,11 @@ function App() {
       file: Yup.string().required('Resume Required').nullable()
     }),
     onSubmit: async (values, actions) => {
-      const response = await submitJobApplication(values)
+      actions.setSubmitting(true)
+      const response = await submitJobApplication({
+        ...values,
+        fileName: previewFileName
+      })
 
       if (response == 200) {
         actions.resetForm({
@@ -95,8 +101,11 @@ function App() {
             file: null,
           }
         })
-
+        actions.setSubmitting(false)
         setShowModal(true)
+        setPreviewFile(null)
+        setPreviewFileName(null)
+        setFieldValue('file', null);
       }
     }
   })
@@ -107,6 +116,9 @@ function App() {
 
   const handleFileChange = (file: File) => {
     setFieldValue('file', file);
+
+    setPreviewFile(URL.createObjectURL(file));
+    setPreviewFileName(file.name);
   };
   
   const basicModal = <>
@@ -442,9 +454,21 @@ function App() {
                               htmlFor="file"
                               className="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
                             >
-                              <FileUploader handleChange={handleFileChange} name="file" types={["PDF"]} maxSize={10}/>
+                              <FileUploader 
+                                handleChange={handleFileChange}
+                                name="file"
+                                types={["PDF"]}
+                                maxSize={10}
+                                label={`Upload or drop your resume here.`}
+                              />
                             </label>
                           </div>
+                          {
+                            (previewFile != null && previewFileName != null && !formik.errors.file) && 
+                              <a href={`${previewFile}`}>
+                                <p className='text-sm text-blue-700 no-underline hover:underline'>{previewFileName}</p>
+                              </a>
+                          }
                         </div>
                       </div>
                       {
