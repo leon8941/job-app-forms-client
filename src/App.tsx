@@ -21,15 +21,11 @@ function App() {
     fetchJobs().then(response => {
       setJobs(response)
     })
-  }, [])
 
-  useEffect(() => {
     fetchLocations().then(response => {
       setLocations(response)
     })
-  }, [])
 
-  useEffect(() => {
     fetchHeardFroms().then(response => {
       setHeardFroms(response)
     })
